@@ -1,0 +1,17 @@
+{
+    "name": "rtps/id_labels",
+    "description": "Internal RTPS application for data managment",
+    "type": "project",
+    "authors": [
+        {
+            "name": "the guy",
+            "email": "admin_123@rtps.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^1.18",
+        "shuchkin/simplexls": "^0.9.5",
+        "shuchkin/simplexlsx": "^0.8.17",
+        "mongodb/mongodb": "^1.6"
+    }
+}

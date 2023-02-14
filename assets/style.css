@@ -1,0 +1,236 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    text-rendering: optimizeSpeed;
+    line-height: 1.5;
+    background-color: whitesmoke;
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* **************************************************************** */
+main {
+    padding: 1em;
+}
+
+nav {
+    text-align: center;
+    border-bottom: 4px solid #ffd303;
+}
+
+nav a {
+    display: inline-block;
+    text-decoration: none;
+    padding: 0.5rem;
+    vertical-align: middle;
+}
+
+nav a:focus,
+nav a:hover {
+    text-decoration: underline;
+}
+
+table {
+    width: 100%;
+}
+
+tbody>tr:hover {
+    background-color: lightgoldenrodyellow;
+}
+
+table,
+th,
+td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    vertical-align: middle;
+    padding: 0.5rem;
+    text-align: start;
+}
+
+th[colspan] {
+    text-align: center;
+}
+
+.note {
+    color: darkred;
+    margin-bottom: 0.3rem;
+}
+
+.status,
+.output p {
+    text-transform: capitalize;
+    padding: 0.5rem 0;
+}
+
+.success {
+    color: darkgreen;
+}
+
+.error {
+    color: tomato;
+    background-color: lavender;
+    padding: 0.2em;
+}
+
+.output p {
+    font-style: italic;
+}
+
+.output div {
+    width: 80%;
+    height: 350px;
+    padding: 1em;
+    margin: auto;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: rgb(33, 36, 40);
+    color: rgb(0, 187, 0);
+    font-family: monospace;
+    white-space: pre-line;
+    overflow: auto;
+}
+
+p.error {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1em;
+}
+
+a:active {
+    color: unset;
+}
+
+.main-nav button,
+a {
+    font-weight: bold;
+}
+
+.main-nav button {
+    padding: 0.5em 1em;
+}
+
+.model {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 1000;
+    background-color: lightgray;
+    padding: 1rem;
+    word-break: break-all;
+}
+
+.model button {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    padding: 0.5em;
+    background-color: coral;
+    color: black;
+    font-weight: bold;
+    border: none;
+}
+
+.hide {
+    display: none;
+}
+
+/* Clearing float */
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.my-h3 {
+    margin: 1em 0;
+}
+
+/* Push data page */
+fieldset {
+    padding: 1em;
+}
+
+legend {
+    font-weight: bold;
+    text-align: center;
+    padding: 0 1em;
+}
+
+.clearfix input[type="submit"] {
+    float: right;
+    padding: 0.5em 1em;
+    background-color: tomato;
+    color: whitesmoke;
+    border: none;
+    font-size: large;
+}
+
+/* Login Page */
+.main-nav.login {
+    text-align: center;
+    padding: 0.5em;
+    background-color: #452414;
+    color: whitesmoke;
+}
+
+form.login {
+    width: 60%;
+    max-width: 100%;
+    margin: 1em auto;
+}
+
+.login div {
+    padding: 0.5em;
+}
+
+.login input {
+    width: 40%;
+    padding: 0.3em;
+}
+
+.login button {
+    padding: 0.5em 1em;
+    border: 2px solid darksalmon;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.new_eodb_service_form table {
+    width: 100%;
+    margin-top: 45px;
+    background: #fff;
+}
+
+.new_eodb_service_form table textarea {
+    width: 100%
+}
+
+.new_eodb_service_form table input[type="text"],
+.new_eodb_service_form table input[type="date"] {
+    width: 100%;
+    height: 35px;
+}
+
+.new_eodb_service_form table input[type="submit"] {
+    background-color: tomato;
+    padding: 10px 40px;
+    border: 0;
+    font-weight: bold;
+    color: whitesmoke;
+
+}
