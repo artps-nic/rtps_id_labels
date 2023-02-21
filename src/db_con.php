@@ -13,16 +13,16 @@ class DBManager
     /* DBs  */
     const RTPS_PROD = 'rtps_prod';
     const EODB_PROD = 'eodb_prod';
-    const RTPS_CONFIGURE = 'rtps_preprod';    //rtps_prepod
-    const EODB_CONFIGURE = 'eodb_preprod';    //eodb_prepod
+    const RTPS_CONFIGURE = 'rtps_prod';    //rtps_prepod
+    const EODB_CONFIGURE = 'eodb_prod';    //eodb_prepod
 
 
     /* Postgress Credentials */
-    private $pg_host = '10.194.162.120';
+    private $pg_host = '127.0.0.1';
     private $db_name = 'rtps_prod';
     private $db_name_eodb = 'eodb_prod';
-    private $username = 'serviceplusrole';
-    private $password = 'Artps@p05tgres';
+    private $username = 'postgres';
+    private $password = 'admin';
     private $pg_port = '5432';
 
 
@@ -72,8 +72,8 @@ class DBManager
     public function get_mongo_connection()
     {
 
-        $this->mongo_host = getenv('MONGO_HOST', true);
-        $this->mongo_port = getenv('MONGO_PORT', true);
+        $this->mongo_host = '127.0.0.1';
+        $this->mongo_port = '27017';
 
         try {
 

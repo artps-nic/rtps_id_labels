@@ -86,9 +86,6 @@ function download_file()
     $util->send_response(200, $res);
 }
 
-
-
-
 // Get track data by appl_ref_no
 function get_track_data()
 {
@@ -166,7 +163,61 @@ function get_gmda_ref_no($sign_no)
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $res['applications'] = $rows;
     $util->send_response(200, $res);
+}
 
+// Get SKILL data by by registration_no , submission_date
+// registration_no = '3548256/02/2022', submission_date = '2022-03-28'
+function get_skill_data()
+{
+    global $db;
+    global $util;
+
+    $pdo = $db->get_postgres_connection_new(DBManager::RTPS_CONFIGURE);
+    $reg_no = trim($_GET['reg_no'] ?? '');
+    $sub_date = trim($_GET['sub_date'] ?? '');
+
+    if (empty($reg_no) || empty($sub_date)) {
+
+        throw new Exception("Missing inputs REG_NO / SUB_DATE", 1);
+    }
+
+    // Get appl_ref_no & bese_service_id by quering with registration_no & submission_date
+    // PHP multiline string HEREDOC & NOWDOC
+    $stmt = $pdo->prepare(<<<QUERY
+
+    select appl_ref_no, base_service_id from sp_custom.application_processing_json
+    where department_id = '2193' and appl_status = 'D'
+    and submission_date::date = ?
+    and COALESCE(
+        initiated_data->'application_form_attributes'->>'122792',
+        initiated_data->'application_form_attributes'->>'122866',
+        initiated_data->'application_form_attributes'->>'121822',
+        initiated_data->'application_form_attributes'->>'121584',
+        initiated_data->'application_form_attributes'->>'128408',
+        initiated_data->'application_form_attributes'->>'133297',
+        initiated_data->'application_form_attributes'->>'133304',
+        initiated_data->'application_form_attributes'->>'133284',
+        initiated_data->'application_form_attributes'->>'133053',
+        initiated_data->'application_form_attributes'->>'133093',
+        initiated_data->'application_form_attributes'->>'132884',
+        initiated_data->'application_form_attributes'->>'133143',
+        initiated_data->'application_form_attributes'->>'133158'
+    
+    ) = ?
+
+    QUERY);
+    $stmt->bindParam(1, $sub_date, PDO::PARAM_STR);
+    $stmt->bindParam(2, $reg_no, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (empty($row)) {
+        $res = "No record found for REG_NO: $reg_no & SUB_DATE: $sub_date";
+    } else {
+        $res = process_data_for_track($row['appl_ref_no'] ?? '', $row['base_service_id'] ?? '');
+    }
+
+    $util->send_response(200, $res);
 }
 
 
@@ -195,8 +246,9 @@ function process_data_for_track($app_ref_no, $service_id, $portal = null)
     }
 
     // 1. Get base_service_id
-    $stmt = $pdo->prepare("select CAST (base_service_id AS VARCHAR), CAST (application_id AS VARCHAR), CAST (service_id AS VARCHAR), initiated_data, execution_data from sp_custom.application_processing_json where appl_ref_no = ? AND initiated_data IS NOT NULL");
+    $stmt = $pdo->prepare("select CAST (base_service_id AS VARCHAR), CAST (application_id AS VARCHAR), CAST (service_id AS VARCHAR), initiated_data, execution_data from sp_custom.application_processing_json where appl_ref_no = ? AND base_service_id = ? AND initiated_data IS NOT NULL");
     $stmt->bindParam(1, $app_ref_no, PDO::PARAM_STR);
+    $stmt->bindParam(2, $service_id, PDO::PARAM_INT);
     $stmt->execute();
     $appl = $stmt->fetch(PDO::FETCH_ASSOC);
     // var_dump($appl); die;
@@ -205,7 +257,7 @@ function process_data_for_track($app_ref_no, $service_id, $portal = null)
         return null;
     }
 
-    // 2. Create KEY-MAPPINGS data (GET ALWAYS FROM RTPS_PROD)
+    // 2. Create KEY-MAPPINGS data
     $stmt = $pdo_labels_mapping->query("SELECT attrb_id, attrb_label, service_id, is_nested FROM sp_custom.id_label_mappings where service_id = '{$appl['base_service_id']}' ");
     $rows = $stmt->fetchAll();
 
@@ -273,10 +325,9 @@ function process_data_for_track($app_ref_no, $service_id, $portal = null)
 
                                     // Which array to choose?
                                     $final_array[((int) $index) - 1][$new_co_key] = clean_data($arr[$k]);
-                                }
-                                else {
-                                	// when attribute id/label mapping not found
-                                	$final_array[((int) $index) - 1][$old_key] = clean_data($arr[$k]);
+                                } else {
+                                    // when attribute id/label mapping not found
+                                    $final_array[((int) $index) - 1][$old_key] = clean_data($arr[$k]);
                                 }
                             }
                         }
@@ -412,33 +463,31 @@ function process_data_for_track($app_ref_no, $service_id, $portal = null)
 
     if (is_array($data_arr['initiated_data']['enclosure_details'])) {
 
+        // Add Enclosure Paths
+        $stmt = $pdo->query("SELECT * FROM schm_sp.spe_service_application_annexure WHERE spdi_application_id = {$appl['application_id']}");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    	// Add Enclosure Paths
-    	$stmt = $pdo->query("SELECT * FROM schm_sp.spe_service_application_annexure WHERE spdi_application_id = {$appl['application_id']}");
-    	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($data_arr['initiated_data']['enclosure_details'] as $key => &$encl) {     // pass by reference
+            $arr_key = array_keys($encl);
 
-	    foreach ($data_arr['initiated_data']['enclosure_details'] as $key => &$encl) {     // pass by reference
-	        $arr_key = array_keys($encl);
+            // print_r($arr_key); die;
 
-	        // print_r($arr_key); die;
+            foreach ($rows as $k => $db_row) {
+                $arr_val = array_values($db_row);
 
-	        foreach ($rows as $k => $db_row) {
-	            $arr_val = array_values($db_row);
+                $res = array_intersect($arr_key, $arr_val);
 
-	            $res = array_intersect($arr_key, $arr_val);
+                if (!empty($res) && sizeof($res) === sizeof($arr_key)) {
+                    $encl['file_path']  = $db_row['storage_file_name'] ?? '';
+                    break;
 
-	            if (!empty($res) && sizeof($res) === sizeof($arr_key)) {
-	                $encl['file_path']  = $db_row['storage_file_name'] ?? '';
-	                break;
+                    // print_r(array_intersect($arr_key, $arr_val)); die;
+                }
+            }
 
-	                // print_r(array_intersect($arr_key, $arr_val)); die;
-	            }
-	        }
-
-	        $encl['file_path'] = $encl['file_path'] ?? '';
-	    }
-
-	}
+            $encl['file_path'] = $encl['file_path'] ?? '';
+        }
+    }
 
     return $data_arr;
 }
@@ -451,14 +500,13 @@ function find_tiny_urls($application_id, $service_id, $portal = null)
         # RTPS
 
         $pdo = (get_service_type($service_id) === 'RTPS') ? $db->get_postgres_connection_new(DBManager::RTPS_CONFIGURE) : $db->get_postgres_connection_new(DBManager::EODB_CONFIGURE);
-    } 
-    elseif ($portal === 'EODB') {
+    } elseif ($portal === 'EODB') {
         # EODB
 
         $pdo = $db->get_postgres_connection_new(DBManager::EODB_CONFIGURE);
     }
 
-    
+
     // Sanitize & Validate
     $application_id = filter_var($application_id, FILTER_VALIDATE_INT);
 

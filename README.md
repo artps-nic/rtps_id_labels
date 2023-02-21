@@ -10,7 +10,8 @@
     - Download Cert / Ack.
     - Get Tiny URL
     - Get GMDA Application for a User
+    - Get Skill Application Data by Registration no. & submission date
 
 
 ### For MongoDB, the Official Driver has been used. Refere to composer.json
- 
+MongoDB PHP Official Doc: [Tutorials](https://www.mongodb.com/docs/php-library/current/tutorial/)
