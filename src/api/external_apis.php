@@ -213,11 +213,14 @@ function get_skill_data()
 
     if (empty($row)) {
         $res = "No record found for REG_NO: $reg_no & SUB_DATE: $sub_date";
-    } else {
+        $util->send_response(404, $res);
+    } 
+    else {
         $res = process_data_for_track($row['appl_ref_no'] ?? '', $row['base_service_id'] ?? '');
+        $util->send_response(200, $res);
     }
 
-    $util->send_response(200, $res);
+    
 }
 
 
