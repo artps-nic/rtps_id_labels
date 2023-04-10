@@ -36,6 +36,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Read all the filed content
 
 foreach ($rows as $key => &$val) {
+
     if (is_file($val['file_name'])) {
 
         if (is_readable($val['file_name'])) {
@@ -48,6 +49,10 @@ foreach ($rows as $key => &$val) {
         $val['file_content'] = null;
         $val['error'] = 'File not found';
     }
+
+    // Get only the filename, not the whole PATH
+    $chunks = explode('/', $val['file_name']);
+    $val['file_name'] = end($chunks);
 }
 
 // print_r($rows);

@@ -539,8 +539,8 @@ function process_data_for_track($app_ref_no, $service_id, $portal = null)
     // Add Certificates
     add_certs($data_arr, $pdo);
 
-    // print_r($data_arr); die();
-
+   
+    // Add Enclousers
     if (is_array($data_arr['initiated_data']['enclosure_details'])) {
 
         // Add Enclosure Paths
