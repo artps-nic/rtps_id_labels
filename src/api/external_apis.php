@@ -14,7 +14,7 @@ require_once './status_ibt_calc.php';
 require_once '../../vendor/autoload.php';
 
 define('RTPS_AUTH_TOKEN', '|0VW?z,-w2w"6;{b8v}K6A5+Fdf@l-');
-define('RTPS_API_REQ_METHODS', ['GET', 'POST']);
+define('RTPS_API_REQ_METHODS', ['GET', 'POST', 'PUT', 'PATCH',]);
 define('RTPS_SECRET', 'rtpsapi#!@');
 
 
@@ -39,8 +39,14 @@ try {
     if (in_array($_SERVER['REQUEST_METHOD'], RTPS_API_REQ_METHODS, true)) {
         $func_name = explode('/', preg_replace('/^\/+/imu', '', trim($_SERVER['PATH_INFO'])))[0];
 
+        // Check if the function exists in this File
         if (function_exists($func_name)) {
             call_user_func($func_name, $_GET);
+        }
+        // Otherwise, check if file exists, then import it
+        elseif (is_file(__DIR__ .  DIRECTORY_SEPARATOR . "includes/{$func_name}.php")) {
+
+            require_once __DIR__ . DIRECTORY_SEPARATOR . "includes/{$func_name}.php";
         } else {
             $util->send_response(404, 'Resource Not Found.');
         }
@@ -143,46 +149,6 @@ function get_tiny_url()
         $res = "No Tiny URLs found for {$application_id}, SERVICE_ID: {$service_id}";
     }
 
-    $util->send_response(200, $res);
-}
-
-function get_gmda_ref_no($params)
-{
-    global $db;
-    global $util;
-    if (empty($params)) {
-        throw new Exception("Invalid Application ID.", 1);
-    }
-    $pdo = $db->get_postgres_connection_new(DBManager::RTPS_CONFIGURE);
-    if ($params['sign_role'] == "CTZN") {
-        $stmt = $pdo->prepare("SELECT t1.spdv_appl_ref_no as appl_ref_no, t1.spdv_beneficiary_name as applicant_name, t2.mobile_no as mobile_no
-        FROM schm_sp.spe_service_application_details t1, schm_sp.m_adm_sign t2 
-        WHERE t1.spdi_beneficiary_id = t2.user_id
-        AND spdv_appl_ref_no iLike 'RTPS-PPBP/%'
-        AND t1.spdv_status = 'D'
-        AND t2.sign_role = 'CTZN'
-        AND t2.mobile_no = :sign_no ");
-    } else if ($params['sign_role'] == "PFC") {
-        $stmt = $pdo->prepare("SELECT t1.spdv_appl_ref_no as appl_ref_no, t1.spdv_beneficiary_name as applicant_name, t2.mobile_no as mobile_no
-        FROM schm_sp.spe_service_application_details t1, schm_sp.m_adm_sign t2 
-        WHERE t1.spdi_beneficiary_id = t2.user_id
-        AND spdv_appl_ref_no iLike 'RTPS-PPBP/%'
-        AND t1.spdv_status = 'D'
-        AND t2.sign_role = 'KIOSK'
-        AND t2.sign_no = :sign_no ");
-    } else if ($params['sign_role'] == "CSC") {
-        $stmt = $pdo->prepare("SELECT spdv_appl_ref_no as appl_ref_no, 'CSC Operator' as applicant_name from schm_sp.spe_service_application_details 
-        WHERE spdv_status = 'D'
-        AND  spdi_application_id IN (
-        SELECT  application_id from sp_custom.application_processing_json 
-        WHERE department_id = 1477
-        AND kiosk_registration_no = :sign_no 
-        )");
-    }
-    $stmt->execute(['sign_no' => $params['sign_no']]);
-    // $stmt->debugDumpParams();
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $res['applications'] = $rows;
     $util->send_response(200, $res);
 }
 
@@ -385,7 +351,6 @@ function get_mis_data()
 
     $util->send_response(200, $result);
 }
-
 
 
 
