@@ -316,13 +316,13 @@ function process_data_for_track($app_ref_no, $service_id, $portal = null)
 
         $pdo_labels_mapping = $db->get_postgres_connection_new(DBManager::RTPS_PROD);
 
-        $pdo = (get_service_type($service_id) === 'RTPS') ? $db->get_postgres_connection_new(DBManager::RTPS_CONFIGURE) : $db->get_postgres_connection_new(DBManager::EODB_CONFIGURE);
+        $pdo = (get_service_type($service_id) === 'RTPS') ? $db->get_postgres_connection_new(DBManager::RTPS_PROD) : $db->get_postgres_connection_new(DBManager::EODB_PROD);
     } elseif ($portal === 'EODB') {
         # EODB
 
         $pdo_labels_mapping = $db->get_postgres_connection_new(DBManager::EODB_PROD);
 
-        $pdo = $db->get_postgres_connection_new(DBManager::EODB_CONFIGURE);
+        $pdo = $db->get_postgres_connection_new(DBManager::EODB_PROD);
     }
 
     // 1. Get base_service_id
@@ -539,7 +539,7 @@ function process_data_for_track($app_ref_no, $service_id, $portal = null)
     // Add Certificates
     add_certs($data_arr, $pdo);
 
-   
+
     // Add Enclousers
     if (is_array($data_arr['initiated_data']['enclosure_details'])) {
 
@@ -569,6 +569,19 @@ function process_data_for_track($app_ref_no, $service_id, $portal = null)
         }
     }
 
+
+    // print_r($data_arr); die;
+
+    // Add Tiny urls
+    $tiny_urls = find_tiny_urls(intval($data_arr['initiated_data']['appl_id']), $service_id, $portal);
+    // $tiny_urls = find_tiny_urls(18492978, 1091, $portal);
+
+    if (!empty($tiny_urls) && !empty($tiny_urls['appl_wise'])) {
+        $data_arr['initiated_data']['tiny_urls'] = $tiny_urls['appl_wise'];
+    } else {
+        $data_arr['initiated_data']['tiny_urls'] = [];
+    }
+
     return $data_arr;
 }
 
@@ -579,11 +592,11 @@ function find_tiny_urls($application_id, $service_id, $portal = null)
     if (is_null($portal)) {
         # RTPS
 
-        $pdo = (get_service_type($service_id) === 'RTPS') ? $db->get_postgres_connection_new(DBManager::RTPS_CONFIGURE) : $db->get_postgres_connection_new(DBManager::EODB_CONFIGURE);
+        $pdo = (get_service_type($service_id) === 'RTPS') ? $db->get_postgres_connection_new(DBManager::RTPS_PROD) : $db->get_postgres_connection_new(DBManager::EODB_PROD);
     } elseif ($portal === 'EODB') {
         # EODB
 
-        $pdo = $db->get_postgres_connection_new(DBManager::EODB_CONFIGURE);
+        $pdo = $db->get_postgres_connection_new(DBManager::EODB_PROD);
     }
 
 
@@ -608,7 +621,7 @@ function find_tiny_urls($application_id, $service_id, $portal = null)
     $appl = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $res['service_wise'] = $appl;
 
-    // var_dump($res); die;
+    // print_r($res); die;
     return $res;
 }
 

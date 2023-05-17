@@ -13,8 +13,8 @@ class DBManager
     /* DBs  */
     const RTPS_PROD = 'rtps_prod';
     const EODB_PROD = 'eodb_prod';
-    const RTPS_CONFIGURE = 'rtps_prod';    //rtps_prepod
-    const EODB_CONFIGURE = 'eodb_prod';    //eodb_prepod
+    const RTPS_CONFIGURE = 'rtps_prepod';    
+    const EODB_CONFIGURE = 'eodb_prepod';    
 
 
     /* Postgress Credentials */
